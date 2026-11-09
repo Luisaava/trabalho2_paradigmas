@@ -40,8 +40,43 @@ No interpretador, digite:
 ```
 
 ## Como Sair
-
 Para sair do interpretador do SWI-Prolog, digite:
-```prolog
+```prolog```
+
+
+
+
+
+
+
+
+rodei tudo no meu PC:
+(.venv) figuera@figuera:~/UFSC/4sem/PARADIGMAS/T2$ swipl -g "resolver(teste_4x4)" -t halt arranha_ceu.pl
+swipl -g "resolver(exemplo_imagem)" -t halt arranha_ceu.pl
+
+=== Solucao Encontrada ===
+
+    4 2 2 1 
+  +--------+
+4 | 1 2 3 4 | 1
+2 | 2 1 4 3 | 2
+2 | 3 4 1 2 | 2
+1 | 4 3 2 1 | 4
+  +--------+
+    1 2 2 4 
+
+=== Solucao Encontrada ===
+
+    3 3 1 2 1 3 
+  +------------+
+4 | 2 3 . 4 5 1 | 2
+3 | 1 2 5 3 4 . | 2
+3 | 3 4 1 5 . 2 | 2
+3 | . 1 4 2 3 5 | 1
+1 | 5 . 3 1 2 4 | 2
+2 | 4 5 2 . 1 3 | 2
+  +------------+
+    2 1 4 3 5 3 
+
 ?- halt.
 ```
