@@ -1,4 +1,4 @@
-% =========================================================================
+f% =========================================================================
 % Disciplina: Paradigmas de Programacao
 % Trabalho II - Programacao Logica Prolog
 % Puzzle: Wolkenkratzer (Arranha-Ceu)
@@ -49,7 +49,7 @@ resolver(NomePuzzle) :-
     
     % 1. Define a estrutura do tabuleiro NxN e extrai as colunas
     length(Tabuleiro, N),
-    maplist( MesmaLargura(N), Tabuleiro ),
+    maplist( mesmaLargura(N), Tabuleiro ),
     transpose(Tabuleiro, Colunas),
     
     % 2. Aplica restricoes de dominio e unicidade nas linhas e colunas
@@ -74,7 +74,7 @@ resolver(NomePuzzle) :-
     imprimir_tabuleiro(Topo, Base, Esquerda, Direita, Tabuleiro).
 
 % Auxiliar para garantir que cada linha tenha N colunas
-MesmaLargura(N, Linha) :- length(Linha, N).
+mesmaLargura(N, Linha) :- length(Linha, N).
 
 % -------------------------------------------------------------------------
 % Regras de Restricao (Dominio, Unicidade e Parques)
@@ -94,8 +94,11 @@ configurar_linha(N, Max, Linha) :-
     numlist(1, Max, Alturas),
     maplist(ocorrencia_unica(Linha), Alturas).
 
+igual_a(A, X, B) :- B #<==> (X #= A).
+
 ocorrencia_unica(Linha, Altura) :-
-    count(Altura, Linha, #=, 1).
+    maplist(igual_a(Altura), Linha, Bs),
+    sum(Bs, #=, 1).
 
 % -------------------------------------------------------------------------
 % Regras de Visibilidade dos Predios
