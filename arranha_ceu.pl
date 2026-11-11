@@ -1,38 +1,23 @@
 % =========================================================================
-:- discontiguous puzzle/8.
 % Disciplina: Paradigmas de Programacao
 % Trabalho II - Programacao Logica Prolog
 % Puzzle: Wolkenkratzer (Arranha-Ceu)
 % =========================================================================
 
+:- discontiguous puzzle/8.
 :- use_module(library(clpfd)).
 
 % -------------------------------------------------------------------------
-% Exemplos de Tabuleiros (Fatos de Entrada)
+% Exemplo de Tabuleiro (Fato de Entrada Único)
 % -------------------------------------------------------------------------
 
-% Exemplo 1: Da imagem fornecida (Tabuleiro 6x6, alturas de 1 a 5 + parques)
-% Representamos os parques (celulas vazias) pelo numero 0.
-puzzle(exemplo_imagem, 6, 5,
-    [3, 3, 1, 2, 1, 3], % Topo
-    [2, 1, 4, 3, 5, 3], % Base
-    [4, 3, 3, 3, 1, 2], % Esquerda
-    [2, 2, 2, 1, 2, 2], % Direita
-    [ [_, _, _, _, _, _],
-      [_, _, _, _, _, _],
-      [_, _, _, _, _, _],
-      [_, _, _, _, _, _],
-      [_, _, _, _, _, _],
-      [_, _, _, _, _, _] ]
-).
-
-% Exemplo 2: Tabuleiro 6x6 classico (alturas de 1 a 6, sem parques)
-% Dica 0 significa que nao ha restricao de visibilidade naquela borda.
-puzzle(exemplo_6x6_classico, 6, 6,
-    [4, 2, 1, 2, 3, 2], % Topo
-    [1, 4, 3, 2, 2, 2], % Base
-    [3, 2, 3, 1, 2, 3], % Esquerda
-    [2, 2, 1, 3, 4, 2], % Direita
+% Tabuleiro 6x6 clássico extraído da imagem
+% N = 6, Max = 6 (alturas de 1 a 6, sem parques)
+puzzle(exemplo_6x6, 6, 6,
+    [4, 1, 2, 2, 3, 2], % Topo
+    [1, 3, 5, 2, 4, 2], % Base
+    [2, 3, 3, 4, 2, 1], % Esquerda
+    [2, 4, 2, 3, 1, 4], % Direita
     [ [_, _, _, _, _, _],
       [_, _, _, _, _, _],
       [_, _, _, _, _, _],
@@ -50,7 +35,7 @@ resolver(NomePuzzle) :-
     
     % 1. Define a estrutura do tabuleiro NxN e extrai as colunas
     length(Tabuleiro, N),
-    maplist( mesmaLargura(N), Tabuleiro ),
+    maplist(mesmaLargura(N), Tabuleiro),
     transpose(Tabuleiro, Colunas),
     
     % 2. Aplica restricoes de dominio e unicidade nas linhas e colunas
@@ -66,7 +51,7 @@ resolver(NomePuzzle) :-
     maplist(reverse, Colunas, ColunasInvertidas),
     aplicar_dicas(ColunasInvertidas, Base),
     
-    % 4. Busca a solucao (Labeling com heuristica First-Fail para otimizacao)
+    % 4. Busca a solucao (Labeling com heuristica First-Fail)
     append(Tabuleiro, Variaveis),
     labeling([ff], Variaveis),
     
@@ -78,27 +63,28 @@ resolver(NomePuzzle) :-
 mesmaLargura(N, Linha) :- length(Linha, N).
 
 % -------------------------------------------------------------------------
-% Regras de Restricao (Dominio, Unicidade e Parques)
+% Regras de Restricao (Dominio e Unicidade)
 % -------------------------------------------------------------------------
 
-% Caso 1: Tabuleiro classico sem parques (Max == N)
+% Caso clássico sem parques (Max == N)
 configurar_linha(N, N, Linha) :-
     !,
     Linha ins 1..N,
     all_distinct(Linha).
 
-% Caso 2: Tabuleiro com parques/celulas vazias representadas por 0 (Max < N)
+% Caso com parques/celulas vazias representadas por 0 (Max < N)
 configurar_linha(N, Max, Linha) :-
     Max < N,
     Linha ins 0..Max,
-    % Cada altura de 1 ate Max deve aparecer exatamente 1 vez na linha/coluna
     numlist(1, Max, Alturas),
     maplist(ocorrencia_unica(Linha), Alturas).
-
 
 ocorrencia_unica(Linha, Altura) :-
     maplist(igual_a(Altura), Linha, Bs),
     sum(Bs, #=, 1).
+
+% Reificação: B recebe 1 se X for igual a A, senao 0
+igual_a(A, X, B) :- B #<==> (X #= A).
 
 % -------------------------------------------------------------------------
 % Regras de Visibilidade dos Predios
@@ -109,14 +95,12 @@ aplicar_dicas([Linha|RestoLinhas], [Dica|RestoDicas]) :-
     visiveis(Linha, Dica),
     aplicar_dicas(RestoLinhas, RestoDicas).
 
-% Se a dica for 0, nao ha restricao de visibilidade naquela posicao
+% Dica 0 indica ausencia de restricao
 visiveis(_, 0) :- !.
 visiveis(Linha, Dica) :-
     contar_visiveis(Linha, 0, 0, TotalVisiveis),
     TotalVisiveis #= Dica.
 
-% Percorre a linha mantendo a altura maxima vista ate o momento (MaxAtual).
-% Um predio H e visivel se e somente se H > MaxAtual.
 contar_visiveis([], _, Acumulador, Acumulador).
 contar_visiveis([H|T], MaxAtual, Acumulador, Total) :-
     Visivel #<==> (H #> MaxAtual),
@@ -151,22 +135,5 @@ imprimir_linhas([Linha|RL], [E|RE], [D|RD]) :-
     (D =:= 0 -> writeln('|') ; format('| ~w~n', [D])),
     imprimir_linhas(RL, RE, RD).
 
-% Imprime espaco vazio '.' para parques (0) ou a altura do predio
 imprimir_celula(C) :-
     (C =:= 0 -> write('. ') ; format('~w ', [C])).
-
-
-% B vale 1 se a celula X tem altura A, senao 0
-igual_a(A, X, B) :- B #<==> (X #= A).
-
-% Teste 4x4 gerado a partir de uma solucao conhecida
-puzzle(teste_4x4, 4, 4,
-    [4, 2, 2, 1],   % Topo
-    [1, 2, 2, 4],   % Base
-    [4, 2, 2, 1],   % Esquerda
-    [1, 2, 2, 4],   % Direita
-    [ [_, _, _, _],
-      [_, _, _, _],
-      [_, _, _, _],
-      [_, _, _, _] ]
-).
