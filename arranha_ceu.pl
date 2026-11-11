@@ -4,15 +4,17 @@
 % Puzzle: Wolkenkratzer (Arranha-Ceu)
 % =========================================================================
 
+% predicados podem aparecer espalhados; não contínuos
 :- discontiguous puzzle/8.
+% pode declarar relações matemáticas com variáveis que não conhecemos o valor ainda
 :- use_module(library(clpfd)).
 
 % -------------------------------------------------------------------------
 % Exemplo de Tabuleiro (Fato de Entrada Único)
 % -------------------------------------------------------------------------
 
-% Tabuleiro 6x6 clássico extraído da imagem
-% N = 6, Max = 6 (alturas de 1 a 6, sem parques)
+% Pegamos o primeiro exemplo de 6x6
+% N = 6, Max = 6 (alturas de 1 a 6, sem valores 0)
 puzzle(exemplo_6x6, 6, 6,
     [4, 1, 2, 2, 3, 2], % Topo
     [1, 3, 5, 2, 4, 2], % Base
@@ -30,36 +32,49 @@ puzzle(exemplo_6x6, 6, 6,
 % Regra Principal do Resolvedor
 % -------------------------------------------------------------------------
 
+%funçao resolver, que vai receber o puzzle (algo como exemplo_6x6)
+% :- é igual a if
 resolver(NomePuzzle) :-
+    % busca o puzzle com o nome que foi passado como parâmetro
     puzzle(NomePuzzle, N, Max, Topo, Base, Esquerda, Direita, Tabuleiro),
-    
-    % 1. Define a estrutura do tabuleiro NxN e extrai as colunas
+
+    % garante que o tabuleiro tenha comprimento N (ou seja, N linhas horizontais)
+    % maplist vai percorrendo as linhas do tabuleiro e aplicando essa regra 
+    % transpose calcula a matriz transposta e coloca em Colunas
     length(Tabuleiro, N),
     maplist(mesmaLargura(N), Tabuleiro),
     transpose(Tabuleiro, Colunas),
     
-    % 2. Aplica restricoes de dominio e unicidade nas linhas e colunas
+    % aplica a regra de configurar_linha pra cada linha do tabuleiro
+    % decide quais números podem ter e que não pode haver repetição
     maplist(configurar_linha(N, Max), Tabuleiro),
     maplist(configurar_linha(N, Max), Colunas),
     
-    % 3. Aplica restricoes de visibilidade nas 4 direcoes (bordas)
+    % impõe que cada linha tenha a quantidade de prédios visíveis indicada na esquerda
     aplicar_dicas(Tabuleiro, Esquerda),
+    % inverte ordem dos prédios e guarda em linhas invertidas
     maplist(reverse, Tabuleiro, LinhasInvertidas),
+    % pareia cada linha invertida com a quantidade na direita
     aplicar_dicas(LinhasInvertidas, Direita),
     
+    % pareia cada coluna com as dicas do topo
     aplicar_dicas(Colunas, Topo),
+    % inverte as colunas
     maplist(reverse, Colunas, ColunasInvertidas),
+    % agora usa as dicas da base com as colunas invertidas
     aplicar_dicas(ColunasInvertidas, Base),
-    
-    % 4. Busca a solucao (Labeling com heuristica First-Fail)
+
+    % achata a lista de listas (tabuleiro) em uma lista só
     append(Tabuleiro, Variaveis),
+    
+    % esse ff é first fail -> o prolog preenche primeiro as casas com menos opções possíveis
     labeling([ff], Variaveis),
     
-    % 5. Imprime o resultado formatado
+    % imprime o resultado
     nl, writeln('=== Solucao Encontrada ==='), nl,
     imprimir_tabuleiro(Topo, Base, Esquerda, Direita, Tabuleiro).
 
-% Auxiliar para garantir que cada linha tenha N colunas
+% verifica se cada linha tem comprimento N
 mesmaLargura(N, Linha) :- length(Linha, N).
 
 % -------------------------------------------------------------------------
@@ -137,3 +152,4 @@ imprimir_linhas([Linha|RL], [E|RE], [D|RD]) :-
 
 imprimir_celula(C) :-
     (C =:= 0 -> write('. ') ; format('~w ', [C])).
+:- initialization(resolver(exemplo_6x6)).
