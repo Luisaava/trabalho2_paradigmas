@@ -53,3 +53,7 @@ Para sair do interpretador do SWI-Prolog, digite:
 rodei tudo no meu PC:
 (.venv) figuera@figuera:~/UFSC/4sem/PARADIGMAS/T2$ swipl -g "resolver(teste_4x4)" -t halt arranha_ceu.pl
 swipl -g "resolver(exemplo_imagem)" -t halt arranha_ceu.pl
+
+agora é:
+(.venv) figuera@figuera:~/UFSC/4sem/PARADIGMAS/T2/apresentacao$ swipl -g "resolver(exemplo_6x6)" -t halt arranha_ceu.pl
+
