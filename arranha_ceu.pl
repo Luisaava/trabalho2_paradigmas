@@ -166,3 +166,6 @@ imprimir_linhas([Linha|RL], [E|RE], [D|RD]) :-
 % celula 0 vira "." (parque); qualquer outro valor é impresso como numero
 imprimir_celula(C) :-
     (C =:= 0 -> write('. ') ; format('~w ', [C])).
+
+% Executa o exemplo ao carregar o arquivo 
+:- initialization(resolver(exemplo_6x6)).
